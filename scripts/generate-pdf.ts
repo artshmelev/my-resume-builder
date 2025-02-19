@@ -1,17 +1,19 @@
 import { chromium } from "playwright";
-import fs from "fs";
+import { writeFile } from "fs/promises";
 
-const generatePDF = async () => {
+const generatePDF = async (language: string) => {
   const browser = await chromium.launch();
   const page = await browser.newPage();
-  await page.goto("http://localhost:3000");
+  await page.goto(`http://localhost:3000/${language}`);
   await page.waitForTimeout(1000);
 
-  const pdfBuffer = await page.pdf({ path: "cv.pdf", format: "A4" });
+  const path = `cv-${language}.pdf`;
+  const pdfBuffer = await page.pdf({ path, format: "A4" });
   await browser.close();
-  console.log("PDF generated successfully: cv.pdf");
+  console.log(`PDF generated successfully: ${path}`);
 
-  fs.writeFileSync("cv.pdf", pdfBuffer);
+  await writeFile(path, pdfBuffer);
 };
 
-generatePDF();
+generatePDF("en");
+generatePDF("ru");
